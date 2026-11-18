@@ -1,3 +1,4 @@
+
 name: API Tests
 
 on:
@@ -31,6 +32,7 @@ jobs:
             ${{ runner.os }}-maven-
 
       - name: Run Tests
+        working-directory: api-test-automation-restful-booker
         run: mvn -B clean verify
 
       - name: Upload Allure Results
@@ -38,4 +40,4 @@ jobs:
         if: always()
         with:
           name: allure-results
-          path: target/allure-results
+          path: api-test-automation-restful-booker/target/allure-results
