@@ -7,6 +7,6 @@ public class HealthCheckService extends BaseService {
 
   @Step("Ping API")
   public Response ping() {
-    return request().get("/ping");
+    return retryGet(() -> request().get("/ping"));
   }
 }

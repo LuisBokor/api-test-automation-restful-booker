@@ -3,15 +3,15 @@ name: API Tests
 
 on:
   push:
-    branches:
-      - master
+    branches: [main, master]
   pull_request:
-    branches:
-      - master
+  workflow_dispatch:
 
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      BASE_URL: ${{ vars.BASE_URL }}
 
     steps:
       - name: Checkout
@@ -33,7 +33,7 @@ jobs:
 
       - name: Run Tests
         working-directory: api-test-automation-restful-booker
-        run: mvn -B clean verify
+        run: mvn -B -Pqa clean verify
 
       - name: Upload Allure Results
         uses: actions/upload-artifact@v4

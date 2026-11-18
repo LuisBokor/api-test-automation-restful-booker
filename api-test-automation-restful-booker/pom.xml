@@ -23,6 +23,10 @@
     <allure.version>2.27.0</allure.version>
     <aspectj.version>1.9.22</aspectj.version>
     <surefire.version>3.2.5</surefire.version>
+    <checkstyle.version>3.6.0</checkstyle.version>
+    <spotbugs.version>4.8.6.6</spotbugs.version>
+    <test.base.url>https://restful-booker.herokuapp.com</test.base.url>
+    <test.environment>default</test.environment>
   </properties>
 
   <dependencyManagement>
@@ -109,7 +113,7 @@
             <path>
               <groupId>org.projectlombok</groupId>
               <artifactId>lombok</artifactId>
-              <version>${lombok.version}</version>e
+              <version>${lombok.version}</version>
             </path>
           </annotationProcessorPaths>
         </configuration>
@@ -140,6 +144,8 @@
           <argLine>-javaagent:"${settings.localRepository}/org/aspectj/aspectjweaver/${aspectj.version}/aspectjweaver-${aspectj.version}.jar"</argLine>
           <systemPropertyVariables>
             <allure.results.directory>${project.build.directory}/allure-results</allure.results.directory>
+            <test.base.url>${test.base.url}</test.base.url>
+            <test.environment>${test.environment}</test.environment>
           </systemPropertyVariables>
         </configuration>
         <dependencies>
@@ -150,6 +156,76 @@
           </dependency>
         </dependencies>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-checkstyle-plugin</artifactId>
+        <version>${checkstyle.version}</version>
+        <configuration>
+          <configLocation>config/checkstyle/checkstyle.xml</configLocation>
+          <includeTestSourceDirectory>true</includeTestSourceDirectory>
+          <consoleOutput>true</consoleOutput>
+          <failsOnError>true</failsOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>${spotbugs.version}</version>
+        <configuration>
+          <includeTests>true</includeTests>
+          <effort>Max</effort>
+          <threshold>High</threshold>
+          <failOnError>true</failOnError>
+        </configuration>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <version>3.4.2</version>
+        <configuration>
+          <skipIfEmpty>true</skipIfEmpty>
+        </configuration>
+      </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>dev</id>
+      <properties>
+        <test.environment>dev</test.environment>
+        <test.base.url>https://restful-booker.herokuapp.com</test.base.url>
+      </properties>
+    </profile>
+    <profile>
+      <id>qa</id>
+      <properties>
+        <test.environment>qa</test.environment>
+        <test.base.url>https://restful-booker.herokuapp.com</test.base.url>
+      </properties>
+    </profile>
+    <profile>
+      <id>prod</id>
+      <properties>
+        <test.environment>prod</test.environment>
+        <test.base.url>https://restful-booker.herokuapp.com</test.base.url>
+      </properties>
+    </profile>
+  </profiles>
 </project>

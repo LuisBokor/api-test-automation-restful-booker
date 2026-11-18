@@ -1,5 +1,6 @@
 package com.seunome.api.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.seunome.api.config.ApiMessages;
@@ -25,7 +26,7 @@ class BookingNegativeTest extends BaseTest {
 
   @BeforeEach
   void authenticate() {
-    token = authService.validToken();
+    token = authToken();
   }
 
   static Stream<Arguments> invalidBookings() {
@@ -88,12 +89,9 @@ class BookingNegativeTest extends BaseTest {
   @Test
   void shouldAcceptBookingWithCheckoutBeforeCheckin() {
     Booking booking = BookingFactory.withCheckoutBeforeCheckin();
+    Booking created = createBooking(booking).booking();
 
-    bookingService
-        .create(booking)
-        .then()
-        .spec(ResponseSpecs.ok())
-        .body("booking.bookingdates.checkin", equalTo(booking.bookingdates().checkin()))
-        .body("booking.bookingdates.checkout", equalTo(booking.bookingdates().checkout()));
+    assertThat(created.bookingdates().checkin()).isEqualTo(booking.bookingdates().checkin());
+    assertThat(created.bookingdates().checkout()).isEqualTo(booking.bookingdates().checkout());
   }
 }

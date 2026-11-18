@@ -11,22 +11,21 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public final class BookingFactory {
 
-  private static final Faker FAKER = new Faker();
-
   public static Booking validBooking() {
     return validBookingBuilder().build();
   }
 
   public static Booking.BookingBuilder validBookingBuilder() {
-    LocalDate checkin = LocalDate.now().plusDays(FAKER.number().numberBetween(1, 30));
-    LocalDate checkout = checkin.plusDays(FAKER.number().numberBetween(1, 15));
+    Faker faker = new Faker();
+    LocalDate checkin = LocalDate.now().plusDays(faker.number().numberBetween(1, 30));
+    LocalDate checkout = checkin.plusDays(faker.number().numberBetween(1, 15));
     return Booking.builder()
-        .firstname(FAKER.name().firstName())
-        .lastname(FAKER.name().lastName())
-        .totalprice(FAKER.number().numberBetween(50, 2000))
-        .depositpaid(FAKER.bool().bool())
+        .firstname(faker.name().firstName())
+        .lastname(faker.name().lastName())
+        .totalprice(faker.number().numberBetween(50, 2000))
+        .depositpaid(faker.bool().bool())
         .bookingdates(datesBetween(checkin, checkout))
-        .additionalneeds(FAKER.options().option("Breakfast", "Late checkout", "Parking", "None"));
+        .additionalneeds(faker.options().option("Breakfast", "Late checkout", "Parking", "None"));
   }
 
   public static Booking withCheckoutBeforeCheckin() {
@@ -35,9 +34,10 @@ public final class BookingFactory {
   }
 
   public static Booking partialUpdate() {
+    Faker faker = new Faker();
     return Booking.builder()
-        .firstname(FAKER.name().firstName())
-        .lastname(FAKER.name().lastName())
+        .firstname(faker.name().firstName())
+        .lastname(faker.name().lastName())
         .build();
   }
 

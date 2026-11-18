@@ -24,7 +24,7 @@ class BookingTest extends BaseTest {
 
   @BeforeEach
   void authenticate() {
-    token = authService.validToken();
+    token = authToken();
   }
 
   @Test
@@ -32,14 +32,7 @@ class BookingTest extends BaseTest {
   void shouldCreateBooking() {
     Booking booking = BookingFactory.validBooking();
 
-    BookingResponse created =
-        bookingService
-            .create(booking)
-            .then()
-            .spec(ResponseSpecs.ok())
-            .body(matchesJsonSchemaInClasspath(JsonSchemas.CREATE_BOOKING_RESPONSE))
-            .extract()
-            .as(BookingResponse.class);
+    BookingResponse created = createBooking(booking);
 
     assertThat(created.bookingid()).isPositive();
     assertThat(created.booking()).isEqualTo(booking);
@@ -124,6 +117,7 @@ class BookingTest extends BaseTest {
     int id = createBooking(BookingFactory.validBooking()).bookingid();
 
     bookingService.delete(id, token).then().spec(ResponseSpecs.created());
+    forgetBooking(id);
 
     bookingService.getById(id).then().spec(ResponseSpecs.notFound());
   }

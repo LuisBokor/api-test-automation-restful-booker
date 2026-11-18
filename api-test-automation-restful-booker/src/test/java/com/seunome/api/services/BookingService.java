@@ -17,12 +17,12 @@ public class BookingService extends BaseService {
 
   @Step("List booking ids")
   public Response list() {
-    return request().get(BOOKING);
+    return retryGet(() -> request().get(BOOKING));
   }
 
   @Step("Get booking {id}")
   public Response getById(int id) {
-    return request().get(BOOKING_BY_ID, id);
+    return retryGet(() -> request().get(BOOKING_BY_ID, id));
   }
 
   @Step("Update booking {id}")
