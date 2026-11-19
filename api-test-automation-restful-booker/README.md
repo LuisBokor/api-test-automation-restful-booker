@@ -49,23 +49,8 @@ Framework de automação de testes de API em Java para o serviço público [Rest
 
 ## Screenshots
 
-> As imagens abaixo devem ser capturadas e salvas em `docs/` com exatamente estes nomes. O guia de captura está em [docs/README.md](docs/README.md).
-
-### GitHub Actions
-
-![GitHub Actions – execução com sucesso](docs/github-actions-success.png)
-
-### Allure Report
-
-![Allure – Overview](docs/allure-overview.png)
-
-![Allure – Suites](docs/allure-suites.png)
-
-![Allure – History](docs/allure-history.png)
-
-### Postman
-
-![Postman – Collection](docs/postman-collection.png)
+O guia para capturar evidências do GitHub Actions, Allure e Postman está em
+[docs/README.md](docs/README.md). As imagens ainda não estão incluídas no repositório.
 
 ## Postman Artifacts
 
@@ -138,12 +123,13 @@ Os cenários manuais estão mapeados para os testes automatizados. O arquivo `po
 | Maven Checkstyle Plugin | 3.6.0 | Verificações estáticas de estilo durante `verify` |
 | SpotBugs Maven Plugin | 4.8.6.6 | Análise estática de bytecode de teste durante `verify` |
 | GitHub Actions | – | Integração contínua |
+| Newman | – | Execução manual da collection Postman pela linha de comando |
 
 ## Arquitetura do framework
 
 ```mermaid
 flowchart TD
-  tests["tests<br/>cenários e asserções"] --> services["services<br/>retornam Response"]
+  tests["io.github.luisbokor.api.tests<br/>cenários e asserções"] --> services["services<br/>retornam Response"]
   tests --> factories["factories<br/>dados com Java Faker"]
   tests --> specifications["specifications<br/>ResponseSpecs e JsonSchemas"]
   factories --> models["models<br/>records Jackson"]
@@ -189,7 +175,7 @@ Spotless, Checkstyle e SpotBugs estão vinculados à fase `verify`, portanto rod
 ```
 postman/                # exploração manual da API (collection, environment, cenários)
 src/test
-├── java/com/seunome/api
+├── java/io/github/luisbokor/api
 │   ├── config          # Configuration, ApiMessages
 │   ├── models          # Booking, BookingDates, BookingResponse, BookingId, AuthRequest
 │   ├── factories       # BookingFactory, AuthRequestFactory
@@ -332,8 +318,8 @@ mvn test -Pdev
 mvn test -Pqa
 mvn test -Pprod
 
-mvn test -Pqa -Dbase.url=https://qa.example.com
-BASE_URL=https://qa.example.com mvn test -Pqa
+mvn test -Pqa -Dbase.url=https://restful-booker.herokuapp.com
+BASE_URL=https://restful-booker.herokuapp.com mvn test -Pqa
 ```
 
 Os três profiles usam a URL do Restful Booker como valor inicial porque o repositório não contém endpoints próprios de desenvolvimento, QA ou produção. Configure `BASE_URL` (ou `-Dbase.url`) para apontar a um ambiente separado. O profile `prod` bloqueia URLs diferentes da API demo por padrão: a suíte cria, atualiza e exclui bookings. Só use `-Dallow.destructive.prod=true` após autorização explícita para executar testes destrutivos no destino.
@@ -451,12 +437,11 @@ O relatório HTML pode ser gerado localmente com a Allure CLI (`allure serve tar
 | Arquitetura e responsabilidades | 9/10 — camadas coesas e asserções fora dos services; framework ainda concentrado em `src/test/java`. |
 | Isolamento e estabilidade | 9/10 — dados isolados, cleanup por teste, timeouts e retry seguro para GET; serviço público continua sujeito a indisponibilidade e rate limiting. |
 | Qualidade e CI | 9/10 — Spotless, Checkstyle, SpotBugs e testes são gates de `verify`; falta análise de dependências/SBOM. |
-| Portfólio | 9/10 — cobertura positiva, negativa, segurança, contratos, Postman e rastreabilidade; nomes do pacote e badges ainda são placeholders. |
+| Portfólio | 9/10 — cobertura positiva, negativa, segurança, contratos, Postman e rastreabilidade. |
 
 **Nota consolidada estimada:** 8,5/10 antes desta evolução e 9,3/10 após ela. A nota é uma avaliação qualitativa, não uma métrica automatizada. Para se aproximar de um framework corporativo, o próximo passo é executar contra ambientes controlados próprios, separar configuração e credenciais por ambiente, introduzir teste de contrato independente da API pública e adicionar análise de dependências e SBOM.
 
 ## Autor
 
-- **Nome:** `<Seu Nome>`
-- **LinkedIn:** `https://www.linkedin.com/in/<seu-usuario>`
+- **Nome:** Luis Bokor
 - **GitHub:** [github.com/LuisBokor](https://github.com/LuisBokor)

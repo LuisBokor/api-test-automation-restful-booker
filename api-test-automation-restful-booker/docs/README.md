@@ -1,6 +1,7 @@
 # Guia de screenshots
 
-Salve as imagens nesta pasta com os nomes exatos abaixo; o README principal as referencia.
+As imagens ainda não estão incluídas no repositório. Para adicionar evidências, salve-as nesta
+pasta com os nomes abaixo e inclua as referências no README principal.
 
 ```
 docs/
