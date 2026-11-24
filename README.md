@@ -1,6 +1,6 @@
 # API Test Automation – Restful Booker
 
-[![API Tests](https://github.com/LuisBokor/api-test-automation-restful-booker/actions/workflows/ci.yml/badge.svg)](https://github.com/LuisBokor/api-test-automation-restful-booker/actions/workflows/ci.yml)
+[![API Tests](https://github.com/LuisBokor/api-test-automation-restful-booker/actions/workflows/ci.yml/badge.svg?branch=master)](https://github.com/LuisBokor/api-test-automation-restful-booker/actions/workflows/ci.yml?query=branch%3Amaster)
 ![Java 17](https://img.shields.io/badge/Java-17-orange?logo=openjdk&logoColor=white)
 ![Maven](https://img.shields.io/badge/Maven-3.8%2B-C71A36?logo=apachemaven&logoColor=white)
 ![JUnit 5](https://img.shields.io/badge/JUnit-5.10.2-25A162?logo=junit5&logoColor=white)
@@ -13,7 +13,7 @@
 
 Framework de automação de testes de API em Java para o serviço público [Restful Booker](https://restful-booker.herokuapp.com/apidoc/index.html), com arquitetura em camadas, testes negativos, testes de segurança e validação de contrato via JSON Schema.
 
-> O projeto Maven fica na pasta `api-test-automation-restful-booker/` dentro do repositório; execute os comandos `mvn` a partir dela. O workflow do GitHub Actions fica na raiz do repositório.
+> O projeto Maven e o workflow do GitHub Actions ficam na raiz do repositório; execute os comandos `mvn` a partir dela.
 
 ## Sumário
 
@@ -45,12 +45,13 @@ Framework de automação de testes de API em Java para o serviço público [Rest
 - Um novo endpoint exige apenas um novo *service*, sem alterar o que já existe.
 - Os testes descrevem a intenção, e os detalhes de HTTP ficam nas camadas inferiores.
 - O comportamento real da API (inclusive suas inconsistências) está documentado em testes executáveis.
-- O pipeline barra código fora do padrão e publica os resultados Allure como artefato.
+- O pipeline barra código fora do padrão, armazena os resultados Allure e publica o relatório após execuções bem-sucedidas na branch principal.
 
 ## Screenshots
 
-O guia para capturar evidências do GitHub Actions, Allure e Postman está em
-[docs/README.md](docs/README.md). As imagens ainda não estão incluídas no repositório.
+O [checklist de captura](docs/README.md) detalha as seis evidências do GitHub Actions, Allure, Postman e Newman.
+Os arquivos PNG ainda não foram capturados; para evitar imagens quebradas, esta seção só deve receber imagens
+depois que os respectivos arquivos existirem em `docs/`.
 
 ## Postman Artifacts
 
@@ -149,7 +150,7 @@ flowchart TD
   B --> C["Newman Validation<br/>62 assertions, 0 falhas"]
   C --> D["Rest Assured Automation<br/>29 testes JUnit 5"]
   D --> E["GitHub Actions<br/>mvn -Pqa clean verify"]
-  E --> F["Allure Report<br/>allure-results como artefato"]
+  E --> F["Allure Report<br/>GitHub Pages + histórico"]
 ```
 
 O fluxo manual valida endpoints e respostas primeiro; os cenários são então expressos em testes automatizados. O mesmo `mvn clean verify` roda localmente e no CI. A execução do Newman é manual (não faz parte do workflow).
@@ -168,6 +169,7 @@ flowchart TD
   end
   V --> J
   SB --> AL["Upload de target/allure-results<br/>(sempre, if: always)"]
+  AL --> PG["GitHub Pages<br/>somente após sucesso na branch principal"]
 ```
 
 Spotless, Checkstyle e SpotBugs estão vinculados à fase `verify`, portanto rodam depois dos testes dentro do mesmo comando Maven; não são etapas separadas do workflow.
@@ -373,7 +375,7 @@ O número máximo de tentativas inclui a chamada inicial. Configurações numér
 
 ## Relatórios Allure
 
-Os resultados são gravados em `target/allure-results`. Com a [Allure CLI](https://allurereport.org/docs/install/) instalada:
+Os resultados são gravados em `target/allure-results`. Com a [Allure CLI](https://allurereport.org/docs/v2/install/) instalada:
 
 ```bash
 allure serve target/allure-results
@@ -381,18 +383,32 @@ allure serve target/allure-results
 
 O relatório inclui a hierarquia Epic/Feature, os `@Step` de cada chamada de service e os anexos de request e response (com o comando `curl` equivalente) gerados pelo `AllureRestAssured`.
 
+**Publicação pendente:** a URL prevista é `https://luisbokor.github.io/api-test-automation-restful-booker/`. Ela só estará disponível após a configuração do Pages e uma execução bem-sucedida do workflow atualizado.
+
 ## Integração contínua
 
-Workflow: [`../.github/workflows/ci.yml`](../.github/workflows/ci.yml) (**API Tests**, na raiz do repositório).
+Workflow: [`.github/workflows/ci.yml`](.github/workflows/ci.yml) (**API Tests**, na raiz do repositório).
 
 - **Gatilhos:** `push` em `main` ou `master`, `pull_request` e execução manual (`workflow_dispatch`).
 - **Ambiente:** `ubuntu-latest`, Temurin JDK 17, com cache do Maven.
 - **Etapas:**
   1. Executa `mvn -B -Pqa clean verify` (testes, Spotless, Checkstyle e SpotBugs).
   2. Publica `target/allure-results` como artefato, mesmo em caso de falha.
-- O job aceita `BASE_URL` como variável de repositório/organização. Sem ela, usa a URL pública demo.
+  3. Depois de uma execução bem-sucedida em `main` ou `master`, restaura o histórico da branch `gh-pages`, gera o relatório, salva até 20 relatórios nessa branch e publica o site usando GitHub Pages via Actions.
+- O job de testes aceita `BASE_URL` como variável de repositório/organização. Sem ela, usa a URL pública demo. O job de publicação rejeita outros destinos para evitar publicar dados de ambientes privados.
+- Pull requests e execuções com falha não publicam no Pages. **O relatório e a branch `gh-pages` são públicos:** steps e anexos podem conter credenciais, tokens, cookies e corpos de requisição/resposta. Use apenas credenciais públicas da demonstração e dados fictícios; não use segredos reais. A restrição de URL não substitui a revisão dos resultados.
+- Configuração inicial necessária: em **Settings → Pages**, selecione **GitHub Actions** como fonte de publicação. Confirme que as políticas do repositório/organização permitem as permissões solicitadas pelo job de publicação (`contents: write`, `pages: write` e `id-token: write`). A branch `gh-pages` é criada automaticamente e guarda os relatórios e o histórico; não é necessário selecioná-la como fonte do Pages.
 
-O relatório HTML pode ser gerado localmente com a Allure CLI (`allure serve target/allure-results`). O workflow armazena os resultados brutos como artefato; não publica automaticamente em GitHub Pages.
+O relatório HTML também pode ser gerado localmente com a Allure CLI (`allure serve target/allure-results`). O artefato de resultados brutos continua disponível no workflow, inclusive quando os testes falham.
+
+### Checklist de ativação do Pages
+
+1. Revise e publique estas alterações em `master`, a branch padrão do repositório.
+2. Em **Settings → Pages → Build and deployment → Source**, selecione **GitHub Actions**. Não selecione **Deploy from a branch**: `gh-pages` é usada apenas para armazenar relatórios e histórico.
+3. Em **Settings → Actions → General**, confirme que as políticas permitem as actions utilizadas e as permissões solicitadas; em **Settings → Environments → github-pages**, confira eventuais aprovações ou restrições de branch.
+4. Em **Actions → API Tests → Run workflow**, selecione `master` e execute. Confirme que os jobs `test` e `publish-allure`, incluindo `Deploy GitHub Pages`, terminaram com sucesso. Um push em `master` também inicia o workflow.
+5. Abra a URL prevista acima e confirme que o Allure carrega, os totais correspondem à execução e os anexos não contêm informações que não devam ser públicas.
+6. Execute o workflow novamente e confirme que **History Trend** mostra mais de uma execução. A branch `gh-pages` será criada pelo primeiro deploy bem-sucedido e mantém até 20 relatórios.
 
 ## Qualidade de código
 
@@ -437,9 +453,9 @@ O relatório HTML pode ser gerado localmente com a Allure CLI (`allure serve tar
 | Arquitetura e responsabilidades | 9/10 — camadas coesas e asserções fora dos services; framework ainda concentrado em `src/test/java`. |
 | Isolamento e estabilidade | 9/10 — dados isolados, cleanup por teste, timeouts e retry seguro para GET; serviço público continua sujeito a indisponibilidade e rate limiting. |
 | Qualidade e CI | 9/10 — Spotless, Checkstyle, SpotBugs e testes são gates de `verify`; falta análise de dependências/SBOM. |
-| Portfólio | 9/10 — cobertura positiva, negativa, segurança, contratos, Postman e rastreabilidade. |
+| Portfólio | 8,5/10 — cobertura e publicação automatizada preparadas; faltam ativar o Pages, capturar os seis screenshots e preencher About/Topics do GitHub. |
 
-**Nota consolidada estimada:** 8,5/10 antes desta evolução e 9,3/10 após ela. A nota é uma avaliação qualitativa, não uma métrica automatizada. Para se aproximar de um framework corporativo, o próximo passo é executar contra ambientes controlados próprios, separar configuração e credenciais por ambiente, introduzir teste de contrato independente da API pública e adicionar análise de dependências e SBOM.
+**Nota consolidada estimada no estado atual:** 8,5/10. A nota é uma avaliação qualitativa, não uma métrica automatizada; a evidência visual ainda não foi capturada e o Pages depende de configuração no GitHub. Para se aproximar de um framework corporativo, o próximo passo é executar contra ambientes controlados próprios, separar configuração e credenciais por ambiente, introduzir teste de contrato independente da API pública e adicionar análise de dependências e SBOM.
 
 ## Autor
 
